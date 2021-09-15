@@ -1,0 +1,7 @@
+.env
+.env.example
+node_modules
+.replit
+config.json
+log
+package-lock.json
