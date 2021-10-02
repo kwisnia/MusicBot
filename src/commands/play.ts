@@ -49,7 +49,7 @@ export default class PlayCommand extends BaseCommand {
     let url = interaction.options.getString('video_url');
     if (!url) {
       await interaction.reply({
-        content: 'Nie podałeś linka...',
+        content: 'You must pass a link or a search phrase',
         ephemeral: true,
       });
       return Promise.resolve();
@@ -61,7 +61,7 @@ export default class PlayCommand extends BaseCommand {
       });
       if (!searchResults[0]) {
         await interaction.reply({
-          content: 'Nie udało się nic znaleźć z tym co podałeś :(',
+          content: 'Nothing was found with the given search phrase :(',
           ephemeral: true,
         });
         return Promise.resolve();
