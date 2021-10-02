@@ -1,1 +1,6 @@
-export default class QueueIndexOutOfBoundsError extends Error {}
+export default class QueueIndexOutOfBoundsError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'QueueIndexOutOfBoundsError';
+  }
+}

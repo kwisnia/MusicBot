@@ -1,6 +1,7 @@
 import {
   AudioPlayer,
   AudioPlayerStatus,
+  AudioResource,
   createAudioPlayer,
   entersState,
   VoiceConnection,
@@ -16,15 +17,9 @@ import { Track } from '../typings/Track';
 const wait = promisify(setTimeout);
 
 export default class MusicSubscription {
-  private voiceConnection: VoiceConnection;
-
-  private audioPlayer: AudioPlayer;
+  public readonly audioPlayer: AudioPlayer;
 
   public queue: Track[];
-
-  private logger: Logger;
-
-  private resourceFactory: IAudioResourceFactory;
 
   private loopSingle = false;
 
@@ -35,15 +30,12 @@ export default class MusicSubscription {
   private readyLock = false;
 
   public constructor(
-    voiceConnection: VoiceConnection,
-    resourceFactory: IAudioResourceFactory,
-    logger: Logger,
+    public readonly voiceConnection: VoiceConnection,
+    private resourceFactory: IAudioResourceFactory,
+    private logger: Logger,
   ) {
-    this.voiceConnection = voiceConnection;
     this.audioPlayer = createAudioPlayer();
     this.queue = [];
-    this.resourceFactory = resourceFactory;
-    this.logger = logger;
 
     this.voiceConnection.on('stateChange', async (_, newState) => {
       if (newState.status === VoiceConnectionStatus.Disconnected) {
@@ -116,22 +108,28 @@ export default class MusicSubscription {
     });
 
     // Configure audio player
-    this.audioPlayer.on('stateChange', (oldState, newState) => {
+    this.audioPlayer.on('stateChange', async (oldState, newState) => {
       if (
         newState.status === AudioPlayerStatus.Idle &&
         oldState.status !== AudioPlayerStatus.Idle
       ) {
         // If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
         // The queue is then processed to start playing the next track, if one is available.
-        this.processQueue();
+        await this.processQueue();
+        if (this.audioPlayer.state.status === AudioPlayerStatus.Idle) {
+          this.voiceConnection.destroy();
+        }
       }
     });
 
     voiceConnection.subscribe(this.audioPlayer);
   }
 
-  public get currentTrack(): Track {
-    return this.queue[0];
+  public get currentTrack(): Track | false {
+    return (
+      this.audioPlayer.state.status !== AudioPlayerStatus.Idle &&
+      (this.audioPlayer.state.resource as AudioResource<Track>).metadata
+    );
   }
 
   public async enqueue(track: Track): Promise<void> {
@@ -172,7 +170,9 @@ export default class MusicSubscription {
     if (this.queue[queueIndex]) {
       return Promise.resolve(this.queue.splice(queueIndex, 1)[0]);
     }
-    throw new QueueIndexOutOfBoundsError();
+    throw new QueueIndexOutOfBoundsError(
+      `Queue index ${queueIndex} is out of bounds of queue of length ${this.queue.length}`,
+    );
   }
 
   public changeLoopSingle(): Promise<boolean> {

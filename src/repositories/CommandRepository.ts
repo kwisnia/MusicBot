@@ -3,16 +3,21 @@ import { injectable, inject } from 'inversify';
 import { Logger } from 'winston';
 import { readdirSync } from 'fs';
 import BOT_TYPES from '../botTypes';
-import { ICommand } from '../services/interaction/ICommand';
+import BaseCommand, { ICommand } from '../services/interaction/BaseCommand';
 import { ICommandRepository } from './ICommandRepository';
+import { ISubscriptionService } from '../services/music/ISubscriptionService';
 
 @injectable()
 class CommandRepository implements ICommandRepository {
-  private commandCollection: Collection<string, ICommand>;
+  private commandCollection: Collection<string, BaseCommand>;
 
   private commandFileList: string[];
 
-  constructor(@inject(BOT_TYPES.Logger) private logger: Logger) {
+  constructor(
+    @inject(BOT_TYPES.Logger) private logger: Logger,
+    @inject(BOT_TYPES.Service.Music.SubscriptionService)
+    private subscriptionService: ISubscriptionService,
+  ) {
     this.commandCollection = new Collection();
     this.commandFileList = readdirSync('./src/commands').filter((file) =>
       file.endsWith('.ts'),
@@ -22,16 +27,20 @@ class CommandRepository implements ICommandRepository {
   public async initCommands(): Promise<void> {
     this.logger.info('Init commands called');
     this.commandFileList.forEach(async (commandFile) => {
-      const { default: command } = (await import(
+      const { default: CommandClass } = (await import(
         `../commands/${commandFile}`
       )) as { default: ICommand };
-      this.commandCollection.set(command.data.name, command);
-      this.logger.info(`Command ${command.data.name} loaded successfully`);
+      const newCommand = new CommandClass(
+        this.logger,
+        this.subscriptionService,
+      );
+      this.commandCollection.set(newCommand.data.name, newCommand);
+      this.logger.info(`Command ${newCommand.data.name} loaded successfully`);
     });
     return Promise.resolve();
   }
 
-  public getCommand(commandName: string): ICommand | undefined {
+  public getCommand(commandName: string): BaseCommand | undefined {
     return this.commandCollection.get(commandName);
   }
 

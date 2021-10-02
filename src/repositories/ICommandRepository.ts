@@ -1,7 +1,7 @@
-import { ICommand } from '../services/interaction/ICommand';
+import BaseCommand from '../services/interaction/BaseCommand';
 
 export interface ICommandRepository {
   initCommands(): Promise<void>;
-  getCommand(name: string): ICommand | undefined;
-  setCommand(name: string, command: ICommand): void;
+  getCommand(name: string): BaseCommand | undefined;
+  setCommand(name: string, command: BaseCommand): void;
 }

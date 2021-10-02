@@ -1,1 +1,6 @@
-export default class BotNotConnectedError extends Error {}
+export default class BotNotConnectedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BotNotConnectedError';
+  }
+}

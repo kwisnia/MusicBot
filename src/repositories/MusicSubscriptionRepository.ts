@@ -1,3 +1,4 @@
+import { VoiceConnectionStatus } from '@discordjs/voice';
 import { Collection, Snowflake } from 'discord.js';
 import { inject, injectable } from 'inversify';
 import { Logger } from 'winston';
@@ -17,7 +18,21 @@ export default class MusicSubscriptionRepository
     guildId: string,
   ): MusicSubscription | undefined {
     this.logger.info(`Getting subscription for guild ${guildId}`);
-    return this.subscriptions.get(guildId);
+    const subscription = this.subscriptions.get(guildId);
+    if (subscription) {
+      const disconnectedStates = [
+        VoiceConnectionStatus.Disconnected,
+        VoiceConnectionStatus.Destroyed,
+      ];
+      if (
+        disconnectedStates.includes(subscription.voiceConnection.state.status)
+      ) {
+        this.subscriptions.delete(guildId);
+      } else {
+        return subscription;
+      }
+    }
+    return undefined;
   }
 
   addSubscription(guildId: string, subscription: MusicSubscription): void {

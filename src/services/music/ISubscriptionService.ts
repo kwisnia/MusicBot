@@ -2,7 +2,7 @@ import { Snowflake, VoiceChannel } from 'discord.js';
 import { Track } from '../../typings/Track';
 
 export interface ISubscriptionService {
-  skipCurrentSong(guildId: string): Promise<Track>;
+  skipCurrentSong(guildId: string): Promise<Track | null>;
   skipSongInQueue(guildId: string, positionInQueue: number): Promise<Track>;
   getGuildQueue(guildId: string): Promise<Track[]>;
   enqueueYoutubeSong(

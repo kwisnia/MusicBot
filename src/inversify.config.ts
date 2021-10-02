@@ -31,10 +31,7 @@ container.bind<Client>(BOT_TYPES.Client).toConstantValue(
       Intents.FLAGS.GUILDS,
       Intents.FLAGS.GUILD_MESSAGES,
       Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-      Intents.FLAGS.GUILD_MEMBERS,
       Intents.FLAGS.GUILD_VOICE_STATES,
-      Intents.FLAGS.DIRECT_MESSAGES,
-      Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
     ],
     presence: {
       activities: [
@@ -48,8 +45,8 @@ container.bind<Client>(BOT_TYPES.Client).toConstantValue(
 );
 container.bind<winston.Logger>(BOT_TYPES.Logger).toConstantValue(logger);
 container
-  .bind<ICommandRepository>(BOT_TYPES.Repository.CommandRepository)
-  .toConstantValue(new CommandRepository(logger));
+  .bind(BOT_TYPES.Repository.MusicSubscriptionRepository)
+  .toConstantValue(new MusicSubscriptionRepository(logger));
 container.bind<IEventController>(BOT_TYPES.EventController).to(EventController);
 container
   .bind<IInteractionService>(BOT_TYPES.Service.Interaction.InteractionService)
@@ -62,7 +59,12 @@ container
   .bind(BOT_TYPES.Service.Music.SubscriptionService)
   .to(SubscriptionService);
 container
-  .bind(BOT_TYPES.Repository.MusicSubscriptionRepository)
-  .to(MusicSubscriptionRepository);
+  .bind<ICommandRepository>(BOT_TYPES.Repository.CommandRepository)
+  .toConstantValue(
+    new CommandRepository(
+      logger,
+      container.get(BOT_TYPES.Service.Music.SubscriptionService),
+    ),
+  );
 
 export default container;

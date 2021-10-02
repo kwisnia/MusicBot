@@ -23,14 +23,19 @@ export default class SubscriptionService implements ISubscriptionService {
     private trackFactory: ITrackFactory,
   ) {}
 
-  public async skipCurrentSong(guildId: string): Promise<Track> {
+  public async skipCurrentSong(guildId: string): Promise<Track | null> {
     this.logger.info('Skip song method called');
     const subscription =
       this.subscriptionRepository.getSubscriptionForGuild(guildId);
     if (!subscription) {
-      throw new BotNotConnectedError();
+      throw new BotNotConnectedError(
+        'Skip command called when bot was not connected',
+      );
     }
     const skippedTrack = subscription.currentTrack;
+    if (!skippedTrack) {
+      return Promise.resolve(null);
+    }
     this.logger.info(`Skipping ${skippedTrack.title} in guild ${guildId}`);
     await subscription.skip();
     return Promise.resolve(skippedTrack);
@@ -44,7 +49,9 @@ export default class SubscriptionService implements ISubscriptionService {
     const subscription =
       this.subscriptionRepository.getSubscriptionForGuild(guildId);
     if (!subscription) {
-      throw new BotNotConnectedError();
+      throw new BotNotConnectedError(
+        'Skip command called when bot was not connected',
+      );
     }
     const skippedTrack = await subscription.skipSelected(positionInQueue);
     return Promise.resolve(skippedTrack);
@@ -54,7 +61,9 @@ export default class SubscriptionService implements ISubscriptionService {
     const subscription =
       this.subscriptionRepository.getSubscriptionForGuild(guildId);
     if (!subscription) {
-      throw new BotNotConnectedError();
+      throw new BotNotConnectedError(
+        'Queue command called when bot was not connected',
+      );
     }
     return Promise.resolve(subscription.queue);
   }
@@ -88,7 +97,9 @@ export default class SubscriptionService implements ISubscriptionService {
     const subscription =
       this.subscriptionRepository.getSubscriptionForGuild(guildId);
     if (!subscription) {
-      throw new BotNotConnectedError();
+      throw new BotNotConnectedError(
+        'Stop command called when bot was not connected',
+      );
     }
     await subscription.stop();
     return Promise.resolve();
@@ -98,7 +109,9 @@ export default class SubscriptionService implements ISubscriptionService {
     const subscription =
       this.subscriptionRepository.getSubscriptionForGuild(guildId);
     if (!subscription) {
-      throw new BotNotConnectedError();
+      throw new BotNotConnectedError(
+        'Pause command called when bot was not connected',
+      );
     }
     await subscription.pause();
     return Promise.resolve();
@@ -108,7 +121,9 @@ export default class SubscriptionService implements ISubscriptionService {
     const subscription =
       this.subscriptionRepository.getSubscriptionForGuild(guildId);
     if (!subscription) {
-      throw new BotNotConnectedError();
+      throw new BotNotConnectedError(
+        'Resume command called when bot was not connected',
+      );
     }
     await subscription.resume();
     return Promise.resolve();

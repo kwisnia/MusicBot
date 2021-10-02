@@ -31,12 +31,11 @@ class InteractionService implements IInteractionService {
       );
       return Promise.resolve();
     } catch (e) {
-      this.logger.error(e);
       await interaction.reply({
         content: getErrorMessage(e as Error),
         ephemeral: true,
       });
-      return Promise.reject();
+      return Promise.reject(e);
     }
   }
 
