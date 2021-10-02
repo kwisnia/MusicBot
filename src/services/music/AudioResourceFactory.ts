@@ -15,6 +15,7 @@ export default class AudioResourceFactory implements IAudioResourceFactory {
     this.logger.info(`Creating new resource from track ${track.title}`);
     const stream = await dlplayer.stream(track.videoUrl, youtubeCookie);
     return createAudioResource(stream.stream, {
+      metadata: track,
       inputType: stream.type,
       inlineVolume: true,
     });

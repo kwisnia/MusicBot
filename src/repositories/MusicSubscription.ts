@@ -171,8 +171,8 @@ export default class MusicSubscription {
   }
 
   public skipSelected(queueIndex: number): Promise<Track> {
-    if (this.queue[queueIndex]) {
-      return Promise.resolve(this.queue.splice(queueIndex, 1)[0]);
+    if (this.queue[queueIndex - 1]) {
+      return Promise.resolve(this.queue.splice(queueIndex - 1, 1)[0]);
     }
     throw new QueueIndexOutOfBoundsError(
       `Queue index ${queueIndex} is out of bounds of queue of length ${this.queue.length}`,
