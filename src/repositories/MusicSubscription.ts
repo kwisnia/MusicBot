@@ -151,9 +151,13 @@ export default class MusicSubscription {
     return Promise.resolve();
   }
 
-  public skip(): Promise<void> {
+  public skip(): Promise<Track | null> {
+    let currentTrack = null as Track | null;
+    if (this.currentTrack) {
+      currentTrack = this.currentTrack;
+    }
     this.audioPlayer.stop();
-    return Promise.resolve();
+    return Promise.resolve(currentTrack);
   }
 
   public pause(): Promise<void> {
