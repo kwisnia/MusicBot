@@ -6,6 +6,7 @@ import {
   GuildMember,
   Message,
   MessageComponentInteraction,
+  MessageEmbed,
   VoiceChannel,
 } from 'discord.js';
 import { Logger } from 'winston';
@@ -76,7 +77,29 @@ export default class PlayCommand extends BaseCommand {
       url,
       interaction.member.id,
     );
-    await interaction.reply(`Added to queue: ${addedSong.title}`);
+    const queue = await this.subscriptionService.getGuildQueue(
+      interaction.guildId!,
+    );
+
+    const embed = new MessageEmbed()
+      .setColor('#00FF00')
+      .setTitle('Added to queue')
+      .setDescription(addedSong.title)
+      .setThumbnail(addedSong.thumbnailUrl)
+      .addField(
+        'Requested by',
+        this.client.users.cache.get(addedSong.requestedBy)?.username ||
+          'unknown',
+      )
+      .setFooter(
+        `${
+          queue.length ? `Position in queue: ${queue.length}` : 'Playing now!'
+        }`,
+      );
+
+    await interaction.reply({
+      embeds: [embed],
+    });
     return Promise.resolve();
   }
 
