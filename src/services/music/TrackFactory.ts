@@ -21,7 +21,7 @@ export default class TrackFactory implements ITrackFactory {
       title: songInfo.video_details.title,
       videoUrl: url,
       length: +songInfo.video_details.durationInSec,
-      thumbnailUrl: songInfo.video_details.thumbnail,
+      thumbnailUrl: songInfo.video_details.thumbnail.url,
       requestedBy: requestingUser,
     });
   }

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { REST } from '@discordjs/rest';
 import { APIApplicationCommandOption, Routes } from 'discord-api-types/v9';
 import * as winston from 'winston';
+import { Client } from 'discord.js';
 import { clientId, token } from '../config.json';
 import container from './inversify.config';
 import BOT_TYPES from './botTypes';
@@ -29,6 +30,7 @@ const logger = winston.createLogger({
 const subscriptionService = container.get<ISubscriptionService>(
   BOT_TYPES.Service.Music.SubscriptionService,
 );
+const client = container.get<Client>(BOT_TYPES.Client);
 const commandFiles = fs
   .readdirSync('./src/commands')
   .filter((file) => file.endsWith('.ts'));
@@ -43,7 +45,7 @@ const rest = new REST({ version: '9' }).setToken(token);
       )) as {
         default: ICommand;
       };
-      const newCommand = new CommandClass(logger, subscriptionService);
+      const newCommand = new CommandClass(logger, subscriptionService, client);
       commands.push(newCommand.data.toJSON());
     }
     await rest.put(

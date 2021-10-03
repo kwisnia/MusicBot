@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import {
+  Client,
   CommandInteraction,
   Message,
   MessageComponentInteraction,
@@ -13,6 +14,7 @@ export default abstract class BaseCommand {
   public constructor(
     protected logger: Logger,
     protected subscribtionService: ISubscriptionService,
+    protected client: Client,
   ) {}
 
   public abstract execute(
@@ -25,5 +27,9 @@ export default abstract class BaseCommand {
 }
 
 export interface ICommand extends BaseCommand {
-  new (logger: Logger, subscribtionService: ISubscriptionService): BaseCommand;
+  new (
+    logger: Logger,
+    subscribtionService: ISubscriptionService,
+    client: Client,
+  ): BaseCommand;
 }

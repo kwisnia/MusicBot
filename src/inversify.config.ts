@@ -24,25 +24,24 @@ const logger = winston.createLogger({
     (log) => `[${log.level.toUpperCase()}] - ${log.message}`,
   ),
 });
-
-container.bind<Client>(BOT_TYPES.Client).toConstantValue(
-  new Client({
-    intents: [
-      Intents.FLAGS.GUILDS,
-      Intents.FLAGS.GUILD_MESSAGES,
-      Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-      Intents.FLAGS.GUILD_VOICE_STATES,
+const client = new Client({
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+    Intents.FLAGS.GUILD_VOICE_STATES,
+  ],
+  presence: {
+    activities: [
+      {
+        name: 'Ekipa',
+        type: 'LISTENING',
+      },
     ],
-    presence: {
-      activities: [
-        {
-          name: 'Ekipa',
-          type: 'LISTENING',
-        },
-      ],
-    },
-  }),
-);
+  },
+});
+
+container.bind<Client>(BOT_TYPES.Client).toConstantValue(client);
 container.bind<winston.Logger>(BOT_TYPES.Logger).toConstantValue(logger);
 container
   .bind(BOT_TYPES.Repository.MusicSubscriptionRepository)
@@ -64,6 +63,7 @@ container
     new CommandRepository(
       logger,
       container.get(BOT_TYPES.Service.Music.SubscriptionService),
+      client,
     ),
   );
 

@@ -1,4 +1,4 @@
-import { Collection } from 'discord.js';
+import { Client, Collection } from 'discord.js';
 import { injectable, inject } from 'inversify';
 import { Logger } from 'winston';
 import { readdirSync } from 'fs';
@@ -17,6 +17,7 @@ class CommandRepository implements ICommandRepository {
     @inject(BOT_TYPES.Logger) private logger: Logger,
     @inject(BOT_TYPES.Service.Music.SubscriptionService)
     private subscriptionService: ISubscriptionService,
+    @inject(BOT_TYPES.Client) private client: Client,
   ) {
     this.commandCollection = new Collection();
     this.commandFileList = readdirSync('./src/commands').filter((file) =>
@@ -33,6 +34,7 @@ class CommandRepository implements ICommandRepository {
       const newCommand = new CommandClass(
         this.logger,
         this.subscriptionService,
+        this.client,
       );
       this.commandCollection.set(newCommand.data.name, newCommand);
       this.logger.info(`Command ${newCommand.data.name} loaded successfully`);

@@ -1,6 +1,7 @@
 /* eslint-disable import/order */
 import { SlashCommandBuilder } from '@discordjs/builders';
 import {
+  Client,
   CommandInteraction,
   GuildMember,
   Message,
@@ -20,8 +21,9 @@ export default class PlayCommand extends BaseCommand {
   public constructor(
     protected logger: Logger,
     protected subscriptionService: ISubscriptionService,
+    protected client: Client,
   ) {
-    super(logger, subscriptionService);
+    super(logger, subscriptionService, client);
     this.data = new SlashCommandBuilder()
       .setName('play')
       .setDescription('Adds a given song to the queue')

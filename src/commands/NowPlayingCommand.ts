@@ -15,7 +15,7 @@ import UserNotInVoiceChannelError from '../errors/UserNotInVoiceChannelError';
 import { ISubscriptionService } from '../services/music/ISubscriptionService';
 import BaseCommand from '../services/interaction/BaseCommand';
 
-export default class SkipCommand extends BaseCommand {
+export default class NowPlayingCommand extends BaseCommand {
   public readonly data;
 
   public constructor(
@@ -25,50 +25,50 @@ export default class SkipCommand extends BaseCommand {
   ) {
     super(logger, subscriptionService, client);
     this.data = new SlashCommandBuilder()
-      .setName('skip')
-      .setDescription('Skips a track in queue')
-      .addIntegerOption((option) =>
-        option.setName('index').setDescription('Position of track to skip'),
-      ) as SlashCommandBuilder;
+      .setName('np')
+      .setDescription('Gives information about currently playing track');
   }
 
   public async execute(
     interaction: CommandInteraction,
   ): Promise<Message | undefined | void> {
-    this.logger.info('Play command called');
+    this.logger.info('Stop command called');
     if (!(interaction.member instanceof GuildMember)) {
       throw new NoGuildError();
     }
     const { channel } = interaction.member.voice;
     if (!channel || !(channel instanceof VoiceChannel)) {
       throw new UserNotInVoiceChannelError(
-        'Command skip was not called in a voice channel',
+        'Command np was not called in a voice channel',
       );
     }
-    const index = interaction.options.getInteger('index');
-    let skippedSong;
-    if (index) {
-      skippedSong = await this.subscribtionService.skipSongInQueue(
-        interaction.guildId!,
-        index,
-      );
-    } else {
-      skippedSong = await this.subscribtionService.skipCurrentSong(
+    const currentTrack =
+      await this.subscriptionService.getCurrentlyPlayingTrack(
         interaction.guildId!,
       );
-    }
-    if (skippedSong) {
-      await interaction.reply(`Skipped ${skippedSong.title}`);
+    let embed;
+    if (currentTrack) {
+      embed = new MessageEmbed()
+        .setColor('#00FF00')
+        .setTitle('Currently playing')
+        .setDescription(currentTrack.title)
+        .setThumbnail(currentTrack.thumbnailUrl)
+        .setFooter(
+          `Requested by: ${
+            this.client.users.cache.get(currentTrack.requestedBy)?.username ||
+            'unknown'
+          }`,
+        );
     } else {
-      const embed = new MessageEmbed()
+      embed = new MessageEmbed()
         .setColor('#880808')
         .setTitle('❌')
-        .setDescription('There is nothing to skip!');
-      await interaction.reply({
-        embeds: [embed],
-        ephemeral: true,
-      });
+        .setDescription('Nothing is playing');
     }
+    await interaction.reply({
+      embeds: [embed],
+      ephemeral: true,
+    });
     return Promise.resolve();
   }
 

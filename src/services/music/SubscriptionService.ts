@@ -68,6 +68,23 @@ export default class SubscriptionService implements ISubscriptionService {
     return Promise.resolve(subscription.queue);
   }
 
+  public async getCurrentlyPlayingTrack(
+    guildId: string,
+  ): Promise<Track | null> {
+    const subscription =
+      this.subscriptionRepository.getSubscriptionForGuild(guildId);
+    if (!subscription) {
+      throw new BotNotConnectedError(
+        'Queue command called when bot was not connected',
+      );
+    }
+    const currentlyPlaying = subscription.currentTrack;
+    if (currentlyPlaying) {
+      return Promise.resolve(currentlyPlaying);
+    }
+    return Promise.resolve(null);
+  }
+
   public async enqueueYoutubeSong(
     guildId: string,
     channel: VoiceChannel,
@@ -127,5 +144,27 @@ export default class SubscriptionService implements ISubscriptionService {
     }
     await subscription.resume();
     return Promise.resolve();
+  }
+
+  public async changeShuffle(guildId: string): Promise<boolean> {
+    const subscription =
+      this.subscriptionRepository.getSubscriptionForGuild(guildId);
+    if (!subscription) {
+      throw new BotNotConnectedError(
+        'Resume command called when bot was not connected',
+      );
+    }
+    return subscription.changeShuffle();
+  }
+
+  public async changeLoop(guildId: string): Promise<boolean> {
+    const subscription =
+      this.subscriptionRepository.getSubscriptionForGuild(guildId);
+    if (!subscription) {
+      throw new BotNotConnectedError(
+        'Resume command called when bot was not connected',
+      );
+    }
+    return subscription.changeLoopSingle();
   }
 }
