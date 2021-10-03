@@ -35,7 +35,7 @@ export default class SkipCommand extends BaseCommand {
   public async execute(
     interaction: CommandInteraction,
   ): Promise<Message | undefined | void> {
-    this.logger.info('Play command called');
+    this.logger.info('Skip command called');
     if (!(interaction.member instanceof GuildMember)) {
       throw new NoGuildError();
     }
@@ -48,12 +48,12 @@ export default class SkipCommand extends BaseCommand {
     const index = interaction.options.getInteger('index');
     let skippedSong;
     if (index) {
-      skippedSong = await this.subscribtionService.skipSongInQueue(
+      skippedSong = await this.subscriptionService.skipSongInQueue(
         interaction.guildId!,
         index,
       );
     } else {
-      skippedSong = await this.subscribtionService.skipCurrentSong(
+      skippedSong = await this.subscriptionService.skipCurrentSong(
         interaction.guildId!,
       );
     }

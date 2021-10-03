@@ -6,6 +6,7 @@ import BOT_TYPES from '../../botTypes';
 import BotNotConnectedError from '../../errors/BotNotConnectedError';
 import { ISubscriptionRepository } from '../../repositories/ISubscriptionRepository';
 import MusicSubscription from '../../repositories/MusicSubscription';
+import { AudioPlayerInfo } from '../../typings/AudioPlayerStatus';
 import { Track } from '../../typings/Track';
 import { IAudioResourceFactory } from './IAudioResourceFactory';
 import { ISubscriptionService } from './ISubscriptionService';
@@ -68,9 +69,9 @@ export default class SubscriptionService implements ISubscriptionService {
     return Promise.resolve(subscription.queue);
   }
 
-  public async getCurrentlyPlayingTrack(
+  public async getSubscriptionStatus(
     guildId: string,
-  ): Promise<Track | null> {
+  ): Promise<AudioPlayerInfo> {
     const subscription =
       this.subscriptionRepository.getSubscriptionForGuild(guildId);
     if (!subscription) {
@@ -78,11 +79,13 @@ export default class SubscriptionService implements ISubscriptionService {
         'Queue command called when bot was not connected',
       );
     }
-    const currentlyPlaying = subscription.currentTrack;
-    if (currentlyPlaying) {
-      return Promise.resolve(currentlyPlaying);
-    }
-    return Promise.resolve(null);
+    const currentStatus: AudioPlayerInfo = {
+      currentTrack: subscription.currentTrack || null,
+      queue: subscription.queue,
+      loopSingle: subscription.loopSingle,
+      shuffle: subscription.shuffle,
+    };
+    return Promise.resolve(currentStatus);
   }
 
   public async enqueueYoutubeSong(

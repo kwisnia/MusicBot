@@ -21,13 +21,15 @@ export default class MusicSubscription {
 
   public queue: Track[];
 
-  private loopSingle = false;
+  public loopSingle = false;
 
-  private shuffle = false;
+  public shuffle = false;
 
   private queueLock = false;
 
   private readyLock = false;
+
+  private lastTrack: Track;
 
   public constructor(
     public readonly voiceConnection: VoiceConnection,
@@ -200,7 +202,7 @@ export default class MusicSubscription {
     if (
       this.queueLock ||
       this.audioPlayer.state.status !== AudioPlayerStatus.Idle ||
-      this.queue.length === 0
+      (this.queue.length === 0 && !this.loopSingle)
     ) {
       return;
     }
@@ -209,12 +211,14 @@ export default class MusicSubscription {
 
     let nextTrack: Track;
     if (this.loopSingle) {
-      [nextTrack] = this.queue;
+      nextTrack = this.lastTrack;
     } else if (this.shuffle) {
       const randomIndex = Math.floor(Math.random() * this.queue.length);
       [nextTrack] = this.queue.splice(randomIndex, 1);
+      this.lastTrack = nextTrack;
     } else {
       nextTrack = this.queue.shift()!;
+      this.lastTrack = nextTrack;
     }
     try {
       // Attempt to convert the Track into an AudioResource (i.e. start streaming the video)

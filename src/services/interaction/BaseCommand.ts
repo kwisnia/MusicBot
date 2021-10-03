@@ -13,7 +13,7 @@ export default abstract class BaseCommand {
 
   public constructor(
     protected logger: Logger,
-    protected subscribtionService: ISubscriptionService,
+    protected subscriptionService: ISubscriptionService,
     protected client: Client,
   ) {}
 

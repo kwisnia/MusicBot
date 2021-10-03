@@ -6,7 +6,6 @@ import {
   GuildMember,
   Message,
   MessageComponentInteraction,
-  MessageEmbed,
   VoiceChannel,
 } from 'discord.js';
 import { Logger } from 'winston';
@@ -15,7 +14,7 @@ import UserNotInVoiceChannelError from '../errors/UserNotInVoiceChannelError';
 import { ISubscriptionService } from '../services/music/ISubscriptionService';
 import BaseCommand from '../services/interaction/BaseCommand';
 
-export default class NowPlayingCommand extends BaseCommand {
+export default class PauseCommand extends BaseCommand {
   public readonly data;
 
   public constructor(
@@ -25,53 +24,25 @@ export default class NowPlayingCommand extends BaseCommand {
   ) {
     super(logger, subscriptionService, client);
     this.data = new SlashCommandBuilder()
-      .setName('np')
-      .setDescription('Gives information about currently playing track');
+      .setName('pause')
+      .setDescription('Pauses playback');
   }
 
   public async execute(
     interaction: CommandInteraction,
   ): Promise<Message | undefined | void> {
-    this.logger.info('Stop command called');
+    this.logger.info('Pause command called');
     if (!(interaction.member instanceof GuildMember)) {
       throw new NoGuildError();
     }
     const { channel } = interaction.member.voice;
     if (!channel || !(channel instanceof VoiceChannel)) {
       throw new UserNotInVoiceChannelError(
-        'Command np was not called in a voice channel',
+        'Command pause was not called in a voice channel',
       );
     }
-    const currentStatus = await this.subscriptionService.getSubscriptionStatus(
-      interaction.guildId!,
-    );
-    let embed;
-    if (currentStatus.currentTrack) {
-      embed = new MessageEmbed()
-        .setColor('#00FF00')
-        .setTitle('Currently playing')
-        .setDescription(currentStatus.currentTrack.title)
-        .setThumbnail(currentStatus.currentTrack.thumbnailUrl)
-        .addField(
-          'Requested by',
-          this.client.users.cache.get(currentStatus.currentTrack.requestedBy)
-            ?.username || 'unknown',
-        )
-        .setFooter(
-          `Loop: ${
-            currentStatus.loopSingle ? 'enabled' : 'disabled'
-          }\nShuffle: ${currentStatus.shuffle ? 'enabled' : 'disabled'}`,
-        );
-    } else {
-      embed = new MessageEmbed()
-        .setColor('#880808')
-        .setTitle('❌')
-        .setDescription('Nothing is playing');
-    }
-    await interaction.reply({
-      embeds: [embed],
-      ephemeral: true,
-    });
+    await this.subscriptionService.pausePlayback(interaction.guildId!);
+    await interaction.reply(`⏸ **Playback paused**`);
     return Promise.resolve();
   }
 
