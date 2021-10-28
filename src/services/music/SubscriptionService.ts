@@ -2,6 +2,8 @@ import { joinVoiceChannel } from '@discordjs/voice';
 import { Snowflake, VoiceChannel } from 'discord.js';
 import { inject, injectable } from 'inversify';
 import { Logger } from 'winston';
+import * as player from 'play-dl';
+import { SpotifyAlbum, SpotifyPlaylist } from 'play-dl/dist/Spotify/classes';
 import BOT_TYPES from '../../botTypes';
 import BotNotConnectedError from '../../errors/BotNotConnectedError';
 import { ISubscriptionRepository } from '../../repositories/ISubscriptionRepository';
@@ -111,6 +113,86 @@ export default class SubscriptionService implements ISubscriptionService {
     const newTrack = await this.trackFactory.createTrack(url, requestingUser);
     subscription.enqueue(newTrack);
     return Promise.resolve(newTrack);
+  }
+
+  public async enqueueYoutubePlaylist(
+    guildId: string,
+    channel: VoiceChannel,
+    url: string,
+    requestingUser: Snowflake,
+  ): Promise<Track[]> {
+    let subscription =
+      this.subscriptionRepository.getSubscriptionForGuild(guildId);
+    if (!subscription) {
+      subscription = new MusicSubscription(
+        joinVoiceChannel({
+          channelId: channel.id,
+          guildId: channel.guildId,
+          adapterCreator: channel.guild.voiceAdapterCreator,
+        }),
+        this.audioResourceFactory,
+        this.logger,
+      );
+      this.subscriptionRepository.addSubscription(guildId, subscription);
+    }
+    const playlist = await player.playlist_info(url);
+    await playlist?.fetch();
+    const tracks = [];
+    for (let i = 1; i <= playlist!.total_pages; i += 1) {
+      tracks.push(
+        ...playlist!
+          .page(i)
+          .map(async (video) =>
+            this.trackFactory.createTrack(video.url!, requestingUser),
+          ),
+      );
+    }
+    const createdTracks = await Promise.all(tracks);
+    subscription.enqueueMany(createdTracks);
+    return Promise.resolve(createdTracks);
+  }
+
+  public async enqueueSpotifyPlaylist(
+    guildId: string,
+    channel: VoiceChannel,
+    playlistData: SpotifyAlbum | SpotifyPlaylist,
+    requestingUser: Snowflake,
+  ): Promise<Track[]> {
+    let subscription =
+      this.subscriptionRepository.getSubscriptionForGuild(guildId);
+    if (!subscription) {
+      subscription = new MusicSubscription(
+        joinVoiceChannel({
+          channelId: channel.id,
+          guildId: channel.guildId,
+          adapterCreator: channel.guild.voiceAdapterCreator,
+        }),
+        this.audioResourceFactory,
+        this.logger,
+      );
+      this.subscriptionRepository.addSubscription(guildId, subscription);
+    }
+    await playlistData.fetch();
+    const tracks = [];
+    for (let i = 1; i <= playlistData.total_pages; i += 1) {
+      tracks.push(
+        ...playlistData.page(i)!.map(async (track) => {
+          const searchResults = await player.search(
+            `${track.artists.map((artist) => artist.name).join(' ')} ${
+              track.name
+            }`,
+            {
+              limit: 1,
+            },
+          );
+          const url = searchResults[0].url!;
+          return this.trackFactory.createTrack(url, requestingUser);
+        }),
+      );
+    }
+    const createdTracks = await Promise.all(tracks);
+    subscription.enqueueMany(createdTracks);
+    return Promise.resolve(createdTracks);
   }
 
   public async stopPlayback(guildId: string): Promise<void> {

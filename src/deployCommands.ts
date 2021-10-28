@@ -48,12 +48,9 @@ const rest = new REST({ version: '9' }).setToken(token);
       const newCommand = new CommandClass(logger, subscriptionService, client);
       commands.push(newCommand.data.toJSON());
     }
-    await rest.put(
-      Routes.applicationGuildCommands(clientId, '791288006967033876'),
-      {
-        body: commands,
-      },
-    );
+    await rest.put(Routes.applicationCommands(clientId), {
+      body: commands,
+    });
 
     logger.info('Successfully registered application commands.');
   } catch (error) {

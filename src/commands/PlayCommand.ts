@@ -15,6 +15,8 @@ import UserNotInVoiceChannelError from '../errors/UserNotInVoiceChannelError';
 import { ISubscriptionService } from '../services/music/ISubscriptionService';
 import * as player from 'play-dl';
 import BaseCommand from '../services/interaction/BaseCommand';
+import { Track } from '../typings/Track';
+import { SpotifyVideo } from 'play-dl/dist/Spotify/classes';
 
 export default class PlayCommand extends BaseCommand {
   public readonly data;
@@ -57,7 +59,9 @@ export default class PlayCommand extends BaseCommand {
       });
       return Promise.resolve();
     }
-    if (!player.yt_validate(url)) {
+    const youtubeCheck = player.yt_validate(url);
+    const spotifyCheck = player.sp_validate(url);
+    if (!youtubeCheck && !spotifyCheck) {
       const searchResults = await player.search(url, {
         limit: 1,
         type: 'video',
@@ -69,14 +73,53 @@ export default class PlayCommand extends BaseCommand {
         });
         return Promise.resolve();
       }
-      url = searchResults[0].url as string;
+      url = searchResults[0].url!;
     }
-    const addedSong = await this.subscriptionService.enqueueYoutubeSong(
-      interaction.guildId!,
-      channel,
-      url,
-      interaction.member.id,
-    );
+    let addedSong: Track | undefined;
+
+    if (spotifyCheck) {
+      if (player.is_expired()) {
+        await player.RefreshToken();
+      }
+      const trackData = await player.spotify(url);
+      if (trackData instanceof SpotifyVideo) {
+        const searchResults = await player.search(
+          `${trackData.artists.map((artist) => artist.name).join(' ')} ${
+            trackData.name
+          }`,
+          {
+            limit: 1,
+          },
+        );
+        url = searchResults[0].url!;
+      } else {
+        const addedSongs =
+          await this.subscriptionService.enqueueSpotifyPlaylist(
+            interaction.guildId!,
+            channel,
+            trackData,
+            interaction.member.id,
+          );
+        [addedSong] = addedSongs;
+      }
+    }
+
+    if (youtubeCheck === 'playlist') {
+      const addedSongs = await this.subscriptionService.enqueueYoutubePlaylist(
+        interaction.guildId!,
+        channel,
+        url,
+        interaction.member.id,
+      );
+      [addedSong] = addedSongs;
+    } else if (!addedSong) {
+      addedSong = await this.subscriptionService.enqueueYoutubeSong(
+        interaction.guildId!,
+        channel,
+        url,
+        interaction.member.id,
+      );
+    }
     const queue = await this.subscriptionService.getGuildQueue(
       interaction.guildId!,
     );

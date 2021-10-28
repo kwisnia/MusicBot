@@ -143,6 +143,19 @@ export default class MusicSubscription {
     return Promise.resolve();
   }
 
+  public async enqueueMany(tracks: Track[]): Promise<void> {
+    this.queue.push(...tracks);
+    await this.processQueue();
+    this.logger.info(
+      `Successfully added ${tracks[0].title} and ${
+        tracks.length - 1
+      } other tracks to queue in guild ${
+        this.voiceConnection.joinConfig.guildId
+      }`,
+    );
+    return Promise.resolve();
+  }
+
   public stop(): Promise<void> {
     this.queueLock = true;
     this.queue = [];
