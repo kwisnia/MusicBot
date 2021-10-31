@@ -1,4 +1,3 @@
-import { Authorization } from 'play-dl';
+import { authorization } from 'play-dl';
 
-console.log(Authorization);
-Authorization();
+authorization();

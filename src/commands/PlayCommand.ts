@@ -16,7 +16,7 @@ import { ISubscriptionService } from '../services/music/ISubscriptionService';
 import * as player from 'play-dl';
 import BaseCommand from '../services/interaction/BaseCommand';
 import { Track } from '../typings/Track';
-import { SpotifyVideo } from 'play-dl/dist/Spotify/classes';
+import { SpotifyTrack } from 'play-dl/dist/Spotify/classes';
 
 export default class PlayCommand extends BaseCommand {
   public readonly data;
@@ -42,6 +42,7 @@ export default class PlayCommand extends BaseCommand {
     interaction: CommandInteraction,
   ): Promise<Message | undefined | void> {
     this.logger.info('Play command called');
+    await interaction.deferReply();
     if (!(interaction.member instanceof GuildMember)) {
       throw new NoGuildError();
     }
@@ -53,23 +54,21 @@ export default class PlayCommand extends BaseCommand {
     }
     let url = interaction.options.getString('video_url');
     if (!url) {
-      await interaction.reply({
+      await interaction.editReply({
         content: 'You must pass a link or a search phrase',
-        ephemeral: true,
       });
       return Promise.resolve();
     }
     const youtubeCheck = player.yt_validate(url);
     const spotifyCheck = player.sp_validate(url);
-    if (!youtubeCheck && !spotifyCheck) {
+    if (youtubeCheck === 'search' && spotifyCheck === 'search') {
       const searchResults = await player.search(url, {
         limit: 1,
-        type: 'video',
+        source: { youtube: 'video' },
       });
       if (!searchResults[0]) {
-        await interaction.reply({
+        await interaction.editReply({
           content: 'Nothing was found with the given search phrase :(',
-          ephemeral: true,
         });
         return Promise.resolve();
       }
@@ -77,12 +76,12 @@ export default class PlayCommand extends BaseCommand {
     }
     let addedSong: Track | undefined;
 
-    if (spotifyCheck) {
+    if (spotifyCheck && spotifyCheck !== 'search') {
       if (player.is_expired()) {
-        await player.RefreshToken();
+        await player.refreshToken();
       }
       const trackData = await player.spotify(url);
-      if (trackData instanceof SpotifyVideo) {
+      if (trackData instanceof SpotifyTrack) {
         const searchResults = await player.search(
           `${trackData.artists.map((artist) => artist.name).join(' ')} ${
             trackData.name
@@ -140,7 +139,7 @@ export default class PlayCommand extends BaseCommand {
         }`,
       );
 
-    await interaction.reply({
+    await interaction.editReply({
       embeds: [embed],
     });
     return Promise.resolve();

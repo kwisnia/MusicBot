@@ -5,7 +5,6 @@ import { Snowflake } from 'discord.js';
 import BOT_TYPES from '../../botTypes';
 import { Track } from '../../typings/Track';
 import { ITrackFactory } from './ITrackFactory';
-import { youtubeCookie } from '../../../config.json';
 
 @injectable()
 export default class TrackFactory implements ITrackFactory {
@@ -16,12 +15,12 @@ export default class TrackFactory implements ITrackFactory {
     requestingUser: Snowflake,
   ): Promise<Track> {
     this.logger.info('Creating new track');
-    const songInfo = await dlplayer.video_info(url, youtubeCookie);
+    const songInfo = await dlplayer.video_info(url);
     return Promise.resolve({
-      title: songInfo.video_details.title,
+      title: songInfo.video_details.title!,
       videoUrl: url,
       length: +songInfo.video_details.durationInSec,
-      thumbnailUrl: songInfo.video_details.thumbnail.url,
+      thumbnailUrl: songInfo.video_details.thumbnail!.url!,
       requestedBy: requestingUser,
     });
   }

@@ -31,10 +31,16 @@ class InteractionService implements IInteractionService {
       );
       return Promise.resolve();
     } catch (e) {
-      await interaction.reply({
-        content: getErrorMessage(e as Error),
-        ephemeral: true,
-      });
+      if (interaction.deferred) {
+        await interaction.editReply({
+          content: getErrorMessage(e as Error),
+        });
+      } else {
+        await interaction.reply({
+          content: getErrorMessage(e as Error),
+          ephemeral: true,
+        });
+      }
       return Promise.reject(e);
     }
   }

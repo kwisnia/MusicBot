@@ -135,15 +135,16 @@ export default class SubscriptionService implements ISubscriptionService {
       );
       this.subscriptionRepository.addSubscription(guildId, subscription);
     }
-    const playlist = await player.playlist_info(url);
+    const playlist = await player.playlist_info(url, { incomplete: true });
     await playlist?.fetch();
     const tracks = [];
-    for (let i = 1; i <= playlist!.total_pages; i += 1) {
+    for (let i = 1; i <= playlist.total_pages; i += 1) {
       tracks.push(
-        ...playlist!
+        ...playlist
           .page(i)
-          .map(async (video) =>
-            this.trackFactory.createTrack(video.url!, requestingUser),
+          .map(
+            async (video) =>
+              this.trackFactory.createTrack(video.url, requestingUser),
           ),
       );
     }
