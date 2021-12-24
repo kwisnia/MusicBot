@@ -15,12 +15,12 @@ export default class TrackFactory implements ITrackFactory {
     requestingUser: Snowflake,
   ): Promise<Track> {
     this.logger.info('Creating new track');
-    const songInfo = await dlplayer.video_info(url);
+    const songInfo = await dlplayer.video_basic_info(url);
     return Promise.resolve({
       title: songInfo.video_details.title!,
       videoUrl: url,
       length: +songInfo.video_details.durationInSec,
-      thumbnailUrl: songInfo.video_details.thumbnail!.url!,
+      thumbnailUrl: songInfo.video_details.thumbnails[0].url,
       requestedBy: requestingUser,
     });
   }

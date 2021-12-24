@@ -1,9 +1,12 @@
-import { joinVoiceChannel } from '@discordjs/voice';
+import {
+  DiscordGatewayAdapterCreator,
+  joinVoiceChannel,
+} from '@discordjs/voice';
 import { Snowflake, VoiceChannel } from 'discord.js';
 import { inject, injectable } from 'inversify';
 import { Logger } from 'winston';
 import * as player from 'play-dl';
-import { SpotifyAlbum, SpotifyPlaylist } from 'play-dl/dist/Spotify/classes';
+import { SpotifyAlbum, SpotifyPlaylist } from 'play-dl';
 import BOT_TYPES from '../../botTypes';
 import BotNotConnectedError from '../../errors/BotNotConnectedError';
 import { ISubscriptionRepository } from '../../repositories/ISubscriptionRepository';
@@ -103,7 +106,8 @@ export default class SubscriptionService implements ISubscriptionService {
         joinVoiceChannel({
           channelId: channel.id,
           guildId: channel.guildId,
-          adapterCreator: channel.guild.voiceAdapterCreator,
+          adapterCreator: channel.guild
+            .voiceAdapterCreator as DiscordGatewayAdapterCreator,
         }),
         this.audioResourceFactory,
         this.logger,
@@ -128,7 +132,8 @@ export default class SubscriptionService implements ISubscriptionService {
         joinVoiceChannel({
           channelId: channel.id,
           guildId: channel.guildId,
-          adapterCreator: channel.guild.voiceAdapterCreator,
+          adapterCreator: channel.guild
+            .voiceAdapterCreator as DiscordGatewayAdapterCreator,
         }),
         this.audioResourceFactory,
         this.logger,
@@ -142,9 +147,8 @@ export default class SubscriptionService implements ISubscriptionService {
       tracks.push(
         ...playlist
           .page(i)
-          .map(
-            async (video) =>
-              this.trackFactory.createTrack(video.url, requestingUser),
+          .map(async (video) =>
+            this.trackFactory.createTrack(video.url, requestingUser),
           ),
       );
     }
@@ -166,7 +170,8 @@ export default class SubscriptionService implements ISubscriptionService {
         joinVoiceChannel({
           channelId: channel.id,
           guildId: channel.guildId,
-          adapterCreator: channel.guild.voiceAdapterCreator,
+          adapterCreator: channel.guild
+            .voiceAdapterCreator as DiscordGatewayAdapterCreator,
         }),
         this.audioResourceFactory,
         this.logger,

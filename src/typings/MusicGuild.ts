@@ -1,6 +1,6 @@
 import { Guild } from 'discord.js';
-import { ISong } from './Track';
+import { Track } from './Track';
 
 export interface MusicGuild extends Guild {
-  queue: ISong[];
+  queue: Track[];
 }

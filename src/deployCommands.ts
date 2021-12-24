@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { REST } from '@discordjs/rest';
-import { APIApplicationCommandOption, Routes } from 'discord-api-types/v9';
+import { Routes } from 'discord-api-types/v9';
 import * as winston from 'winston';
 import { Client } from 'discord.js';
 import { clientId, token } from '../config.json';
@@ -9,15 +9,7 @@ import BOT_TYPES from './botTypes';
 import { ISubscriptionService } from './services/music/ISubscriptionService';
 import { ICommand } from './services/interaction/BaseCommand';
 
-interface ISlashCommandJSON {
-  name: string;
-  description: string;
-  options: APIApplicationCommandOption[];
-  // eslint-disable-next-line camelcase
-  default_permission: boolean | undefined;
-}
-
-const commands: ISlashCommandJSON[] = [];
+const commands = [];
 const logger = winston.createLogger({
   transports: [
     new winston.transports.Console(),

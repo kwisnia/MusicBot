@@ -16,7 +16,7 @@ import { ISubscriptionService } from '../services/music/ISubscriptionService';
 import * as player from 'play-dl';
 import BaseCommand from '../services/interaction/BaseCommand';
 import { Track } from '../typings/Track';
-import { SpotifyTrack } from 'play-dl/dist/Spotify/classes';
+import { SpotifyTrack } from 'play-dl';
 
 export default class PlayCommand extends BaseCommand {
   public readonly data;
@@ -134,9 +134,7 @@ export default class PlayCommand extends BaseCommand {
           'unknown',
       )
       .setFooter(
-        `${
-          queue.length ? `Position in queue: ${queue.length}` : 'Playing now!'
-        }`,
+        queue.length ? `Position in queue: ${queue.length}` : 'Playing now!',
       );
 
     await interaction.editReply({

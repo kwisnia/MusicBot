@@ -1,5 +1,5 @@
 import { Snowflake, VoiceChannel } from 'discord.js';
-import { SpotifyAlbum, SpotifyPlaylist } from 'play-dl/dist/Spotify/classes';
+import { SpotifyAlbum, SpotifyPlaylist } from 'play-dl';
 import { AudioPlayerInfo } from '../../typings/AudioPlayerStatus';
 import { Track } from '../../typings/Track';
 

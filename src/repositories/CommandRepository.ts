@@ -20,8 +20,10 @@ class CommandRepository implements ICommandRepository {
     @inject(BOT_TYPES.Client) private client: Client,
   ) {
     this.commandCollection = new Collection();
-    this.commandFileList = readdirSync('./src/commands').filter((file) =>
-      file.endsWith('.ts'),
+    this.commandFileList = readdirSync(
+      `./${process.env.NODE_ENV === 'production' ? 'build/' : ''}src/commands`,
+    ).filter((file) =>
+      file.endsWith(`${process.env.NODE_ENV === 'production' ? '.js' : '.ts'}`),
     );
   }
 
