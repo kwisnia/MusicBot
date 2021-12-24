@@ -7,6 +7,7 @@ import { inject, injectable } from 'inversify';
 import { Logger } from 'winston';
 import * as player from 'play-dl';
 import { SpotifyAlbum, SpotifyPlaylist } from 'play-dl';
+import { chunk } from 'lodash';
 import BOT_TYPES from '../../botTypes';
 import BotNotConnectedError from '../../errors/BotNotConnectedError';
 import { ISubscriptionRepository } from '../../repositories/ISubscriptionRepository';
@@ -143,14 +144,28 @@ export default class SubscriptionService implements ISubscriptionService {
     const playlist = await player.playlist_info(url, { incomplete: true });
     await playlist?.fetch();
     const tracks = [];
-    for (let i = 1; i <= playlist.total_pages; i += 1) {
-      tracks.push(
-        ...playlist
-          .page(i)
-          .map(async (video) =>
+    // eslint-disable-next-line no-restricted-syntax
+    for await (const pageNumber of Array.from(
+      { length: playlist.total_pages },
+      (_, i) => i + 1,
+    )) {
+      // eslint-disable-next-line no-restricted-syntax
+      for await (const pageChunk of chunk(playlist.page(pageNumber), 3)) {
+        const chunkTracks = await Promise.all(
+          pageChunk.map((video) =>
             this.trackFactory.createTrack(video.url, requestingUser),
           ),
-      );
+        );
+        tracks.push(...chunkTracks);
+      }
+      // const test = await Promise.all(
+      //   playlist
+      //     .page(pageNumber)
+      //     .map((video) =>
+      //       this.trackFactory.createTrack(video.url, requestingUser),
+      //     ),
+      // );
+      // tracks.push(...test);
     }
     const createdTracks = await Promise.all(tracks);
     subscription.enqueueMany(createdTracks);

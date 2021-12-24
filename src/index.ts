@@ -1,5 +1,6 @@
 import { Client } from 'discord.js';
 import { Logger } from 'winston';
+import * as http from 'http';
 import container from './inversify.config';
 import BOT_TYPES from './botTypes';
 import { token } from '../config.json';
@@ -16,8 +17,22 @@ const commandRepository = container.get<ICommandRepository>(
 const logger = container.get<Logger>(BOT_TYPES.Logger);
 
 (async () => {
+  http
+    .createServer((req, res) => {
+      res.write("I'm alive");
+      res.end();
+    })
+    .listen(8080);
   client.on('ready', () => {
     logger.info('The bot is online!');
+    const activities = [`/play`, `/play`, `/play`];
+    let i = 0;
+
+    setInterval(() => {
+      client.user!.setActivity(`${activities[(i += 1 % activities.length)]}`, {
+        type: 'LISTENING',
+      });
+    }, 5000);
   });
   client.on('debug', (m) => {
     logger.debug(m);
