@@ -57,11 +57,11 @@ export default class NowPlayingCommand extends BaseCommand {
           this.client.users.cache.get(currentStatus.currentTrack.requestedBy)
             ?.username || 'unknown',
         )
-        .setFooter(
-          `Loop: ${
+        .setFooter({
+          text: `Loop: ${
             currentStatus.loopSingle ? 'enabled' : 'disabled'
           }\nShuffle: ${currentStatus.shuffle ? 'enabled' : 'disabled'}`,
-        );
+        });
     } else {
       embed = new MessageEmbed()
         .setColor('#880808')

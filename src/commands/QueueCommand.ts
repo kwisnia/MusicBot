@@ -77,11 +77,11 @@ export default class QueueCommand extends BaseCommand {
               : 'Queue is empty 😥 Add some songs!',
           },
         )
-        .setFooter(
-          `Loop: ${
+        .setFooter({
+          text: `Loop: ${
             currentStatus.loopSingle ? 'enabled' : 'disabled'
           }\nShuffle: ${currentStatus.shuffle ? 'enabled' : 'disabled'}`,
-        );
+        });
     } else {
       embed = new MessageEmbed()
         .setColor('#880808')

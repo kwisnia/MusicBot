@@ -133,9 +133,11 @@ export default class PlayCommand extends BaseCommand {
         this.client.users.cache.get(addedSong.requestedBy)?.username ||
           'unknown',
       )
-      .setFooter(
-        queue.length ? `Position in queue: ${queue.length}` : 'Playing now!',
-      );
+      .setFooter({
+        text: queue.length
+          ? `Position in queue: ${queue.length}`
+          : 'Playing now!',
+      });
 
     await interaction.editReply({
       embeds: [embed],
