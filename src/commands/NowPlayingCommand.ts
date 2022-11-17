@@ -51,7 +51,7 @@ export default class NowPlayingCommand extends BaseCommand {
         .setColor('#00FF00')
         .setTitle('Currently playing')
         .setDescription(currentStatus.currentTrack.title)
-        .setThumbnail(currentStatus.currentTrack.thumbnailUrl)
+        .setThumbnail(currentStatus.currentTrack.thumbnailUrl ?? '')
         .addField(
           'Requested by',
           this.client.users.cache.get(currentStatus.currentTrack.requestedBy)

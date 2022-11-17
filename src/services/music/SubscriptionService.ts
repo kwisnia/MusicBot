@@ -115,7 +115,10 @@ export default class SubscriptionService implements ISubscriptionService {
       );
       this.subscriptionRepository.addSubscription(guildId, subscription);
     }
-    const newTrack = await this.trackFactory.createTrack(url, requestingUser);
+    const newTrack = await this.trackFactory.createYoutubeTrack(
+      url,
+      requestingUser,
+    );
     subscription.enqueue(newTrack);
     return Promise.resolve(newTrack);
   }
@@ -153,7 +156,7 @@ export default class SubscriptionService implements ISubscriptionService {
       for await (const pageChunk of chunk(playlist.page(pageNumber), 3)) {
         const chunkTracks = await Promise.all(
           pageChunk.map((video) =>
-            this.trackFactory.createTrack(video.url, requestingUser),
+            this.trackFactory.createYoutubeTrack(video.url, requestingUser),
           ),
         );
         tracks.push(...chunkTracks);
@@ -186,31 +189,18 @@ export default class SubscriptionService implements ISubscriptionService {
       this.subscriptionRepository.addSubscription(guildId, subscription);
     }
     await playlistData.fetch();
-    const tracks = [];
-    // eslint-disable-next-line no-restricted-syntax
-    for await (const pageNumber of Array.from(
-      { length: playlistData.total_pages },
-      (_, i) => i + 1,
-    )) {
-      // eslint-disable-next-line no-restricted-syntax
-      for await (const pageChunk of chunk(playlistData.page(pageNumber), 3)) {
-        const chunkTracks = await Promise.all(
-          pageChunk.map(async (track) => {
-            const searchResults = await player.search(
-              `${track.artists.map((artist) => artist.name).join(' ')} ${
-                track.name
-              } audio`,
-              {
-                limit: 1,
-              },
-            );
-            const url = searchResults[0].url!;
-            return this.trackFactory.createTrack(url, requestingUser);
-          }),
-        );
-        tracks.push(...chunkTracks);
-      }
-    }
+    const tracks: Promise<Track>[] = [];
+    Array.from({ length: playlistData.total_pages }, (_, i) => i + 1).forEach(
+      (pageNumber) => {
+        playlistData
+          .page(pageNumber)
+          ?.map((video) =>
+            tracks.push(
+              this.trackFactory.createSpotifyTrack(video, requestingUser),
+            ),
+          );
+      },
+    );
     const createdTracks = await Promise.all(tracks);
     subscription.enqueueMany(createdTracks);
     return Promise.resolve(createdTracks);

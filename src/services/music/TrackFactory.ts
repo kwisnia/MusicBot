@@ -10,7 +10,7 @@ import { ITrackFactory } from './ITrackFactory';
 export default class TrackFactory implements ITrackFactory {
   public constructor(@inject(BOT_TYPES.Logger) private logger: Logger) {}
 
-  public async createTrack(
+  public async createYoutubeTrack(
     url: string,
     requestingUser: Snowflake,
   ): Promise<Track> {
@@ -21,6 +21,19 @@ export default class TrackFactory implements ITrackFactory {
       videoUrl: url,
       length: +songInfo.video_details.durationInSec,
       thumbnailUrl: songInfo.video_details.thumbnails[0].url,
+      requestedBy: requestingUser,
+    });
+  }
+
+  public async createSpotifyTrack(
+    track: dlplayer.SpotifyTrack,
+    requestingUser: Snowflake,
+  ): Promise<Track> {
+    this.logger.info('Creating new track');
+    return Promise.resolve({
+      title: `${track.artists.map((a) => a.name).join(', ')} - ${track.name}`,
+      length: track.durationInSec,
+      thumbnailUrl: track.thumbnail?.url,
       requestedBy: requestingUser,
     });
   }

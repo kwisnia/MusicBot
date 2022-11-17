@@ -53,6 +53,7 @@ export default class PlayCommand extends BaseCommand {
       );
     }
     let url = interaction.options.getString('video_url');
+    let isPlaylist = false;
     if (!url) {
       await interaction.editReply({
         content: 'You must pass a link or a search phrase',
@@ -100,6 +101,7 @@ export default class PlayCommand extends BaseCommand {
             interaction.member.id,
           );
         [addedSong] = addedSongs;
+        isPlaylist = true;
       }
     }
 
@@ -111,6 +113,7 @@ export default class PlayCommand extends BaseCommand {
         interaction.member.id,
       );
       [addedSong] = addedSongs;
+      isPlaylist = true;
     } else if (!addedSong) {
       addedSong = await this.subscriptionService.enqueueYoutubeSong(
         interaction.guildId!,
@@ -125,9 +128,11 @@ export default class PlayCommand extends BaseCommand {
 
     const embed = new MessageEmbed()
       .setColor('#00FF00')
-      .setTitle('Added to queue')
-      .setDescription(addedSong.title)
-      .setThumbnail(addedSong.thumbnailUrl)
+      .setTitle(`Added ${isPlaylist ? 'playlist' : 'song'} to the queue`)
+      .setDescription(
+        `${addedSong.title} ${isPlaylist ? ' and other songs' : ''}`,
+      )
+      .setThumbnail(addedSong.thumbnailUrl ?? '')
       .addField(
         'Requested by',
         this.client.users.cache.get(addedSong.requestedBy)?.username ||
@@ -135,7 +140,9 @@ export default class PlayCommand extends BaseCommand {
       )
       .setFooter({
         text: queue.length
-          ? `Position in queue: ${queue.length}`
+          ? `${isPlaylist ? 'Total queue length:' : 'Position in queue:'} ${
+              queue.length
+            }`
           : 'Playing now!',
       });
 
