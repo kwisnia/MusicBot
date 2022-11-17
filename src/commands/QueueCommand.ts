@@ -62,7 +62,6 @@ export default class QueueCommand extends BaseCommand {
         .setColor('#00FF00')
         .setTitle('Playback queue')
         .addField('Currently playing', currentStatus.currentTrack.title, true)
-        .setThumbnail(currentStatus.currentTrack.thumbnailUrl ?? "")
         .addFields(
           {
             name: 'Requested by',
@@ -99,6 +98,10 @@ export default class QueueCommand extends BaseCommand {
             currentStatus.loopSingle ? 'enabled' : 'disabled'
           }\nShuffle: ${currentStatus.shuffle ? 'enabled' : 'disabled'}`,
         });
+
+      if (currentStatus.currentTrack.thumbnailUrl) {
+        embed = embed.setThumbnail(currentStatus.currentTrack.thumbnailUrl);
+      }
     } else {
       embed = new MessageEmbed()
         .setColor('#880808')
