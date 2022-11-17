@@ -199,7 +199,7 @@ export default class SubscriptionService implements ISubscriptionService {
             const searchResults = await player.search(
               `${track.artists.map((artist) => artist.name).join(' ')} ${
                 track.name
-              }`,
+              } audio`,
               {
                 limit: 1,
               },

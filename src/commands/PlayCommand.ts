@@ -85,7 +85,7 @@ export default class PlayCommand extends BaseCommand {
         const searchResults = await player.search(
           `${trackData.artists.map((artist) => artist.name).join(' ')} ${
             trackData.name
-          }`,
+          } audio`,
           {
             limit: 1,
           },
