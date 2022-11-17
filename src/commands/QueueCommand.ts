@@ -58,6 +58,7 @@ export default class QueueCommand extends BaseCommand {
     );
     let embed;
     if (currentStatus.currentTrack) {
+      console.log(currentStatus.currentTrack);
       embed = new MessageEmbed()
         .setColor('#00FF00')
         .setTitle('Playback queue')
@@ -77,19 +78,19 @@ export default class QueueCommand extends BaseCommand {
             value: currentStatus.queue.length
               ? currentStatus.queue
                   .slice(
-                    page - 1 * PAGE_SIZE,
+                    (page - 1) * PAGE_SIZE,
                     (page - 1) * PAGE_SIZE + PAGE_SIZE,
                   )
                   .map(
                     (track, index) =>
-                      `${page - 1 * PAGE_SIZE + index + 1}. ${
+                      `${(page - 1) * PAGE_SIZE + index + 1}. ${
                         track.title
                       } (requested by: ${
                         this.client.users.cache.get(track.requestedBy)
                           ?.username || 'unknown'
                       })`,
                   )
-                  .join('\n')
+                  .join('\n') || 'Queue is empty 😥 Add some songs!'
               : 'Queue is empty 😥 Add some songs!',
           },
         )
