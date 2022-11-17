@@ -28,7 +28,7 @@
     "ffmpeg-static": "^4.4.0",
     "inversify": "^6.0.1",
     "lodash": "^4.17.21",
-    "play-dl": "^1.9.5",
+    "play-dl": "^1.9.6",
     "reflect-metadata": "^0.1.13",
     "tweetnacl": "^1.0.3",
     "winston": "^3.3.3"

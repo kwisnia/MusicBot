@@ -158,14 +158,6 @@ export default class SubscriptionService implements ISubscriptionService {
         );
         tracks.push(...chunkTracks);
       }
-      // const test = await Promise.all(
-      //   playlist
-      //     .page(pageNumber)
-      //     .map((video) =>
-      //       this.trackFactory.createTrack(video.url, requestingUser),
-      //     ),
-      // );
-      // tracks.push(...test);
     }
     const createdTracks = await Promise.all(tracks);
     subscription.enqueueMany(createdTracks);
@@ -195,21 +187,29 @@ export default class SubscriptionService implements ISubscriptionService {
     }
     await playlistData.fetch();
     const tracks = [];
-    for (let i = 1; i <= playlistData.total_pages; i += 1) {
-      tracks.push(
-        ...playlistData.page(i)!.map(async (track) => {
-          const searchResults = await player.search(
-            `${track.artists.map((artist) => artist.name).join(' ')} ${
-              track.name
-            }`,
-            {
-              limit: 1,
-            },
-          );
-          const url = searchResults[0].url!;
-          return this.trackFactory.createTrack(url, requestingUser);
-        }),
-      );
+    // eslint-disable-next-line no-restricted-syntax
+    for await (const pageNumber of Array.from(
+      { length: playlistData.total_pages },
+      (_, i) => i + 1,
+    )) {
+      // eslint-disable-next-line no-restricted-syntax
+      for await (const pageChunk of chunk(playlistData.page(pageNumber), 3)) {
+        const chunkTracks = await Promise.all(
+          pageChunk.map(async (track) => {
+            const searchResults = await player.search(
+              `${track.artists.map((artist) => artist.name).join(' ')} ${
+                track.name
+              }`,
+              {
+                limit: 1,
+              },
+            );
+            const url = searchResults[0].url!;
+            return this.trackFactory.createTrack(url, requestingUser);
+          }),
+        );
+        tracks.push(...chunkTracks);
+      }
     }
     const createdTracks = await Promise.all(tracks);
     subscription.enqueueMany(createdTracks);
