@@ -29,7 +29,8 @@ const logger = container.get<Logger>(BOT_TYPES.Logger);
     let i = 0;
 
     setInterval(() => {
-      client.user!.setActivity(`${activities[(i += 1 % activities.length)]}`, {
+      // eslint-disable-next-line no-plusplus
+      client.user!.setActivity(`${activities[(i++ % activities.length)]}`, {
         type: 'LISTENING',
       });
     }, 5000);
