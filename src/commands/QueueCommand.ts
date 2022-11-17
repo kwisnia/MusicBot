@@ -15,6 +15,8 @@ import UserNotInVoiceChannelError from '../errors/UserNotInVoiceChannelError';
 import { ISubscriptionService } from '../services/music/ISubscriptionService';
 import BaseCommand from '../services/interaction/BaseCommand';
 
+const PAGE_SIZE = 5;
+
 export default class QueueCommand extends BaseCommand {
   public readonly data;
 
@@ -26,6 +28,13 @@ export default class QueueCommand extends BaseCommand {
     super(logger, subscriptionService, client);
     this.data = new SlashCommandBuilder()
       .setName('queue')
+      .addIntegerOption((option) =>
+        option
+          .setName('page')
+          .setDescription('Page number')
+          .setRequired(false)
+          .setMinValue(1),
+      )
       .setDescription('Gives information about queue in current server');
   }
 
@@ -42,6 +51,8 @@ export default class QueueCommand extends BaseCommand {
         'Command queue was not called in a voice channel',
       );
     }
+    const page = interaction.options.getInteger('page') ?? 1;
+
     const currentStatus = await this.subscriptionService.getSubscriptionStatus(
       interaction.guildId!,
     );
@@ -63,12 +74,18 @@ export default class QueueCommand extends BaseCommand {
           },
           { name: '\u200B', value: '\u200B' },
           {
-            name: 'Queue',
+            name: `Queue (page ${page})`,
             value: currentStatus.queue.length
               ? currentStatus.queue
+                  .slice(
+                    page - 1 * PAGE_SIZE,
+                    (page - 1) * PAGE_SIZE + PAGE_SIZE,
+                  )
                   .map(
                     (track, index) =>
-                      `${index + 1}. ${track.title} (requested by: ${
+                      `${page - 1 * PAGE_SIZE + index + 1}. ${
+                        track.title
+                      } (requested by: ${
                         this.client.users.cache.get(track.requestedBy)
                           ?.username || 'unknown'
                       })`,
