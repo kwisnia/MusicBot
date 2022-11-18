@@ -13,6 +13,7 @@ import NoGuildError from '../errors/NoGuildError';
 import UserNotInVoiceChannelError from '../errors/UserNotInVoiceChannelError';
 import { ISubscriptionService } from '../services/music/ISubscriptionService';
 import BaseCommand from '../services/interaction/BaseCommand';
+import { LoopMode } from '../typings/AudioPlayerStatus';
 
 export default class LoopCommand extends BaseCommand {
   public readonly data;
@@ -25,7 +26,23 @@ export default class LoopCommand extends BaseCommand {
     super(logger, subscriptionService, client);
     this.data = new SlashCommandBuilder()
       .setName('loop')
-      .setDescription('Enables looping of a currently playing track');
+      .setDescription('Enables looping of a currently playing track')
+      .addStringOption((option) =>
+        option
+          .setName('mode')
+          .setDescription('Loop mode')
+          .setRequired(true)
+          .addChoices(
+            {
+              name: 'Track',
+              value: LoopMode.Track,
+            },
+            {
+              name: 'Queue',
+              value: LoopMode.Queue,
+            },
+          ),
+      ) as SlashCommandBuilder;
   }
 
   public async execute(
@@ -41,11 +58,13 @@ export default class LoopCommand extends BaseCommand {
         'Command loop was not called in a voice channel',
       );
     }
-    const newValue = await this.subscriptionService.changeLoop(
+    const mode = interaction.options.getString('mode');
+    const newValue = this.subscriptionService.changeLoop(
       interaction.guildId!,
+      mode as LoopMode,
     );
     await interaction.reply(
-      `🔂 **Loop ${newValue ? 'enabled' : 'disabled'}!**`,
+      `🔂 **Loop for ${mode} ${newValue ? 'enabled' : 'disabled'}!**`,
     );
     return Promise.resolve();
   }

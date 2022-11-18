@@ -7,12 +7,11 @@ import { inject, injectable } from 'inversify';
 import { Logger } from 'winston';
 import * as player from 'play-dl';
 import { SpotifyAlbum, SpotifyPlaylist } from 'play-dl';
-import { chunk } from 'lodash';
 import BOT_TYPES from '../../botTypes';
 import BotNotConnectedError from '../../errors/BotNotConnectedError';
 import { ISubscriptionRepository } from '../../repositories/ISubscriptionRepository';
 import MusicSubscription from '../../repositories/MusicSubscription';
-import { AudioPlayerInfo } from '../../typings/AudioPlayerStatus';
+import { AudioPlayerInfo, LoopMode } from '../../typings/AudioPlayerStatus';
 import { Track } from '../../typings/Track';
 import { IAudioResourceFactory } from './IAudioResourceFactory';
 import { ISubscriptionService } from './ISubscriptionService';
@@ -90,6 +89,7 @@ export default class SubscriptionService implements ISubscriptionService {
       queue: subscription.queue,
       loopSingle: subscription.loopSingle,
       shuffle: subscription.shuffle,
+      loopAll: subscription.loopAll,
     };
     return Promise.resolve(currentStatus);
   }
@@ -146,22 +146,17 @@ export default class SubscriptionService implements ISubscriptionService {
     }
     const playlist = await player.playlist_info(url, { incomplete: true });
     await playlist?.fetch();
-    const tracks = [];
-    // eslint-disable-next-line no-restricted-syntax
-    for await (const pageNumber of Array.from(
-      { length: playlist.total_pages },
-      (_, i) => i + 1,
-    )) {
-      // eslint-disable-next-line no-restricted-syntax
-      for await (const pageChunk of chunk(playlist.page(pageNumber), 3)) {
-        const chunkTracks = await Promise.all(
-          pageChunk.map((video) =>
-            this.trackFactory.createYoutubeTrack(video.url, requestingUser),
-          ),
-        );
-        tracks.push(...chunkTracks);
-      }
-    }
+    const tracks: Track[] = [];
+    Array.from({ length: playlist.total_pages }, (_, i) => i + 1).forEach(
+      (pageNumber) => {
+        const videoPage = playlist.page(pageNumber);
+        videoPage.forEach((video) => {
+          tracks.push(
+            this.trackFactory.createYoutubePlaylistTrack(video, requestingUser),
+          );
+        });
+      },
+    );
     const createdTracks = await Promise.all(tracks);
     subscription.enqueueMany(createdTracks);
     return Promise.resolve(createdTracks);
@@ -189,7 +184,7 @@ export default class SubscriptionService implements ISubscriptionService {
       this.subscriptionRepository.addSubscription(guildId, subscription);
     }
     await playlistData.fetch();
-    const tracks: Promise<Track>[] = [];
+    const tracks: Track[] = [];
     Array.from({ length: playlistData.total_pages }, (_, i) => i + 1).forEach(
       (pageNumber) => {
         playlistData
@@ -201,9 +196,8 @@ export default class SubscriptionService implements ISubscriptionService {
           );
       },
     );
-    const createdTracks = await Promise.all(tracks);
-    subscription.enqueueMany(createdTracks);
-    return Promise.resolve(createdTracks);
+    subscription.enqueueMany(tracks);
+    return Promise.resolve(tracks);
   }
 
   public async stopPlayback(guildId: string): Promise<void> {
@@ -242,7 +236,7 @@ export default class SubscriptionService implements ISubscriptionService {
     return Promise.resolve();
   }
 
-  public async changeShuffle(guildId: string): Promise<boolean> {
+  public changeShuffle(guildId: string): boolean {
     const subscription =
       this.subscriptionRepository.getSubscriptionForGuild(guildId);
     if (!subscription) {
@@ -253,7 +247,7 @@ export default class SubscriptionService implements ISubscriptionService {
     return subscription.changeShuffle();
   }
 
-  public async changeLoop(guildId: string): Promise<boolean> {
+  public changeLoop(guildId: string, mode: LoopMode): boolean {
     const subscription =
       this.subscriptionRepository.getSubscriptionForGuild(guildId);
     if (!subscription) {
@@ -261,6 +255,9 @@ export default class SubscriptionService implements ISubscriptionService {
         'Resume command called when bot was not connected',
       );
     }
-    return subscription.changeLoopSingle();
+    if (mode === LoopMode.Track) {
+      return subscription.changeLoopSingle();
+    }
+    return subscription.changeLoopAll();
   }
 }

@@ -25,16 +25,30 @@ export default class TrackFactory implements ITrackFactory {
     });
   }
 
-  public async createSpotifyTrack(
+  public createSpotifyTrack(
     track: dlplayer.SpotifyTrack,
     requestingUser: Snowflake,
-  ): Promise<Track> {
+  ): Track {
     this.logger.info('Creating new track');
-    return Promise.resolve({
+    return {
       title: `${track.artists.map((a) => a.name).join(', ')} - ${track.name}`,
       length: track.durationInSec,
       thumbnailUrl: track.thumbnail?.url,
       requestedBy: requestingUser,
-    });
+    };
+  }
+
+  public createYoutubePlaylistTrack(
+    video: dlplayer.YouTubeVideo,
+    requestingUser: Snowflake,
+  ): Track {
+    this.logger.info('Creating new track');
+    return {
+      title: video.title ?? 'Unknown',
+      videoUrl: video.url,
+      length: video.durationInSec,
+      thumbnailUrl: video.thumbnails[0].url,
+      requestedBy: requestingUser,
+    };
   }
 }

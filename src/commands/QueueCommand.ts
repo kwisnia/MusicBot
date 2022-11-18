@@ -51,14 +51,18 @@ export default class QueueCommand extends BaseCommand {
         'Command queue was not called in a voice channel',
       );
     }
-    const page = interaction.options.getInteger('page') ?? 1;
+    let page = interaction.options.getInteger('page') ?? 1;
 
     const currentStatus = await this.subscriptionService.getSubscriptionStatus(
       interaction.guildId!,
     );
     let embed;
     if (currentStatus.currentTrack) {
-      console.log(currentStatus.currentTrack);
+      const totalPages = Math.ceil(currentStatus.queue.length / PAGE_SIZE);
+      if (page > totalPages) {
+        page = totalPages;
+      }
+
       embed = new MessageEmbed()
         .setColor('#00FF00')
         .setTitle('Playback queue')
@@ -74,7 +78,11 @@ export default class QueueCommand extends BaseCommand {
           },
           { name: '\u200B', value: '\u200B' },
           {
-            name: `Queue (page ${page})`,
+            name: `Queue ${
+              currentStatus.queue.length > 0
+                ? `(page ${page} of ${totalPages})`
+                : ''
+            }`,
             value: currentStatus.queue.length
               ? currentStatus.queue
                   .slice(
@@ -95,8 +103,10 @@ export default class QueueCommand extends BaseCommand {
           },
         )
         .setFooter({
-          text: `Loop: ${
+          text: `Loop: single - ${
             currentStatus.loopSingle ? 'enabled' : 'disabled'
+          }, queue - ${
+            currentStatus.loopAll ? 'enabled' : 'disabled'
           }\nShuffle: ${currentStatus.shuffle ? 'enabled' : 'disabled'}`,
         });
 

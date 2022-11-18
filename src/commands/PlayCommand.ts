@@ -114,7 +114,7 @@ export default class PlayCommand extends BaseCommand {
       );
       [addedSong] = addedSongs;
       isPlaylist = true;
-    } else if (!addedSong) {
+  } else if (!addedSong) {
       addedSong = await this.subscriptionService.enqueueYoutubeSong(
         interaction.guildId!,
         channel,

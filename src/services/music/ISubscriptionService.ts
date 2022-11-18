@@ -1,6 +1,6 @@
 import { Snowflake, VoiceChannel } from 'discord.js';
 import { SpotifyAlbum, SpotifyPlaylist } from 'play-dl';
-import { AudioPlayerInfo } from '../../typings/AudioPlayerStatus';
+import { AudioPlayerInfo, LoopMode } from '../../typings/AudioPlayerStatus';
 import { Track } from '../../typings/Track';
 
 export interface ISubscriptionService {
@@ -29,6 +29,6 @@ export interface ISubscriptionService {
   stopPlayback(guildId: string): Promise<void>;
   pausePlayback(guildId: string): Promise<void>;
   resumePlayback(guildId: string): Promise<void>;
-  changeShuffle(guildId: string): Promise<boolean>;
-  changeLoop(guildId: string): Promise<boolean>;
+  changeShuffle(guildId: string): boolean;
+  changeLoop(guildId: string, mode: LoopMode): boolean;
 }

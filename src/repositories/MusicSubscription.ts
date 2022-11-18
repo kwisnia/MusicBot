@@ -23,6 +23,8 @@ export default class MusicSubscription {
 
   public loopSingle = false;
 
+  public loopAll = false;
+
   public shuffle = false;
 
   private queueLock = false;
@@ -201,20 +203,28 @@ export default class MusicSubscription {
     );
   }
 
-  public changeLoopSingle(): Promise<boolean> {
+  public changeLoopSingle(): boolean {
     this.loopSingle = !this.loopSingle;
     this.logger.info(
       `Successfully changed loopSingle value in guild ${this.voiceConnection.joinConfig.guildId} to ${this.loopSingle}`,
     );
-    return Promise.resolve(this.loopSingle);
+    return this.loopSingle;
   }
 
-  public changeShuffle(): Promise<boolean> {
+  public changeLoopAll(): boolean {
+    this.loopAll = !this.loopAll;
+    this.logger.info(
+      `Successfully changed loopAll value in guild ${this.voiceConnection.joinConfig.guildId} to ${this.loopAll}`,
+    );
+    return this.loopAll;
+  }
+
+  public changeShuffle(): boolean {
     this.shuffle = !this.shuffle;
     this.logger.info(
       `Successfully changed shuffle value in guild ${this.voiceConnection.joinConfig.guildId} to ${this.loopSingle}`,
     );
-    return Promise.resolve(this.shuffle);
+    return this.shuffle;
   }
 
   private async processQueue(): Promise<void> {
@@ -230,14 +240,21 @@ export default class MusicSubscription {
     this.queueLock = true;
 
     let nextTrack: Track;
+
     if (this.loopSingle) {
       nextTrack = this.lastTrack;
     } else if (this.shuffle) {
       const randomIndex = Math.floor(Math.random() * this.queue.length);
       [nextTrack] = this.queue.splice(randomIndex, 1);
+      if (this.loopAll && this.lastTrack) {
+        this.queue.push(this.lastTrack);
+      }
       this.lastTrack = nextTrack;
     } else {
       nextTrack = this.queue.shift()!;
+      if (this.loopAll && this.lastTrack) {
+        this.queue.push(this.lastTrack);
+      }
       this.lastTrack = nextTrack;
     }
     try {

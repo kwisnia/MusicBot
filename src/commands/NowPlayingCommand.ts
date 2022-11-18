@@ -58,8 +58,10 @@ export default class NowPlayingCommand extends BaseCommand {
             ?.username || 'unknown',
         )
         .setFooter({
-          text: `Loop: ${
+          text: `Loop: single - ${
             currentStatus.loopSingle ? 'enabled' : 'disabled'
+          }, queue - ${
+            currentStatus.loopAll ? 'enabled' : 'disabled'
           }\nShuffle: ${currentStatus.shuffle ? 'enabled' : 'disabled'}`,
         });
     } else {
