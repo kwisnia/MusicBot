@@ -41,7 +41,7 @@ export default class LoopCommand extends BaseCommand {
         'Command shuffle was not called in a voice channel',
       );
     }
-    const newValue = await this.subscriptionService.changeLoop(
+    const newValue = await this.subscriptionService.changeShuffle(
       interaction.guildId!,
     );
     await interaction.reply(
