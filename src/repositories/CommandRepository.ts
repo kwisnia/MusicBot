@@ -21,7 +21,7 @@ class CommandRepository implements ICommandRepository {
   ) {
     this.commandCollection = new Collection();
     this.commandFileList = readdirSync(
-      `./${process.env.NODE_ENV === 'production' ? 'build/' : ''}src/commands`,
+      `./${process.env.NODE_ENV === 'production' ? 'build/' : 'src/'}commands`,
     ).filter((file) =>
       file.endsWith(`${process.env.NODE_ENV === 'production' ? '.js' : '.ts'}`),
     );
