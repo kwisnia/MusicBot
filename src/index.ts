@@ -1,9 +1,9 @@
 import { Client } from 'discord.js';
 import { Logger } from 'winston';
 // import * as http from 'http';
+import * as dotenv from 'dotenv';
 import container from './inversify.config';
 import BOT_TYPES from './botTypes';
-import { token } from '../config.json';
 import { IEventController } from './events/IEventController';
 import { ICommandRepository } from './repositories/ICommandRepository';
 
@@ -17,6 +17,8 @@ const commandRepository = container.get<ICommandRepository>(
 const logger = container.get<Logger>(BOT_TYPES.Logger);
 
 (async () => {
+  dotenv.config();
+  console.log(process.env.TOKEN);
   // http
   //   .createServer((req, res) => {
   //     res.write("I'm alive");
@@ -47,5 +49,5 @@ const logger = container.get<Logger>(BOT_TYPES.Logger);
   await eventController.bindEvents();
   await commandRepository.initCommands();
   process.on('uncaughtException', (error) => logger.error(error));
-  await client.login(token);
+  await client.login(process.env.TOKEN);
 })();
