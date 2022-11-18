@@ -1,12 +1,11 @@
-/* eslint-disable import/order */
-import { SlashCommandBuilder } from '@discordjs/builders';
 import {
   Client,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   GuildMember,
   Message,
   MessageComponentInteraction,
-  MessageEmbed,
+  EmbedBuilder,
+  SlashCommandBuilder,
   VoiceChannel,
 } from 'discord.js';
 import { Logger } from 'winston';
@@ -30,7 +29,7 @@ export default class NowPlayingCommand extends BaseCommand {
   }
 
   public async execute(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
   ): Promise<Message | undefined | void> {
     this.logger.info('Stop command called');
     if (!(interaction.member instanceof GuildMember)) {
@@ -47,16 +46,20 @@ export default class NowPlayingCommand extends BaseCommand {
     );
     let embed;
     if (currentStatus.currentTrack) {
-      embed = new MessageEmbed()
+      embed = new EmbedBuilder()
         .setColor('#00FF00')
         .setTitle('Currently playing')
         .setDescription(currentStatus.currentTrack.title)
         .setThumbnail(currentStatus.currentTrack.thumbnailUrl ?? '')
-        .addField(
-          'Requested by',
-          this.client.users.cache.get(currentStatus.currentTrack.requestedBy)
-            ?.username || 'unknown',
-        )
+        .addFields([
+          {
+            name: 'Requested by',
+            value:
+              this.client.users.cache.get(
+                currentStatus.currentTrack.requestedBy,
+              )?.username || 'unknown',
+          },
+        ])
         .setFooter({
           text: `Loop: single - ${
             currentStatus.loopSingle ? 'enabled' : 'disabled'
@@ -65,7 +68,7 @@ export default class NowPlayingCommand extends BaseCommand {
           }\nShuffle: ${currentStatus.shuffle ? 'enabled' : 'disabled'}`,
         });
     } else {
-      embed = new MessageEmbed()
+      embed = new EmbedBuilder()
         .setColor('#880808')
         .setTitle('❌')
         .setDescription('Nothing is playing');

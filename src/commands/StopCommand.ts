@@ -1,13 +1,12 @@
-/* eslint-disable import/order */
-import { SlashCommandBuilder } from '@discordjs/builders';
 import {
   Client,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   GuildMember,
   Message,
   MessageComponentInteraction,
-  MessageEmbed,
+  EmbedBuilder,
   VoiceChannel,
+  SlashCommandBuilder,
 } from 'discord.js';
 import { Logger } from 'winston';
 import NoGuildError from '../errors/NoGuildError';
@@ -30,7 +29,7 @@ export default class StopCommand extends BaseCommand {
   }
 
   public async execute(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
   ): Promise<Message | undefined | void> {
     this.logger.info('Stop command called');
     if (!(interaction.member instanceof GuildMember)) {
@@ -43,7 +42,7 @@ export default class StopCommand extends BaseCommand {
       );
     }
     await this.subscriptionService.stopPlayback(interaction.guildId!);
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('#880808')
       .setTitle('🛑')
       .setDescription('Playback stopped');

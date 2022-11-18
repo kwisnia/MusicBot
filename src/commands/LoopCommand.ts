@@ -1,11 +1,10 @@
-/* eslint-disable import/order */
-import { SlashCommandBuilder } from '@discordjs/builders';
 import {
+  ChatInputCommandInteraction,
   Client,
-  CommandInteraction,
   GuildMember,
   Message,
   MessageComponentInteraction,
+  SlashCommandBuilder,
   VoiceChannel,
 } from 'discord.js';
 import { Logger } from 'winston';
@@ -46,7 +45,7 @@ export default class LoopCommand extends BaseCommand {
   }
 
   public async execute(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
   ): Promise<Message | undefined | void> {
     this.logger.info('Loop command called');
     if (!(interaction.member instanceof GuildMember)) {

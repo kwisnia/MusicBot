@@ -1,13 +1,12 @@
-/* eslint-disable import/order */
-import { SlashCommandBuilder } from '@discordjs/builders';
 import {
   Client,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   GuildMember,
   Message,
   MessageComponentInteraction,
-  MessageEmbed,
+  EmbedBuilder,
   VoiceChannel,
+  SlashCommandBuilder,
 } from 'discord.js';
 import { Logger } from 'winston';
 import NoGuildError from '../errors/NoGuildError';
@@ -39,7 +38,7 @@ export default class QueueCommand extends BaseCommand {
   }
 
   public async execute(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
   ): Promise<Message | undefined | void> {
     this.logger.info('Queue command called');
     if (!(interaction.member instanceof GuildMember)) {
@@ -63,11 +62,15 @@ export default class QueueCommand extends BaseCommand {
         page = totalPages;
       }
 
-      embed = new MessageEmbed()
+      embed = new EmbedBuilder()
         .setColor('#00FF00')
         .setTitle('Playback queue')
-        .addField('Currently playing', currentStatus.currentTrack.title, true)
         .addFields(
+          {
+            name: 'Currently playing',
+            value: currentStatus.currentTrack.title,
+            inline: true,
+          },
           {
             name: 'Requested by',
             value:
@@ -114,7 +117,7 @@ export default class QueueCommand extends BaseCommand {
         embed = embed.setThumbnail(currentStatus.currentTrack.thumbnailUrl);
       }
     } else {
-      embed = new MessageEmbed()
+      embed = new EmbedBuilder()
         .setColor('#880808')
         .setTitle('❌')
         .setDescription('Nothing is playing');

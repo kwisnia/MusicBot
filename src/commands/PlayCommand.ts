@@ -1,22 +1,21 @@
-/* eslint-disable import/order */
-import { SlashCommandBuilder } from '@discordjs/builders';
 import {
   Client,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   GuildMember,
   Message,
   MessageComponentInteraction,
-  MessageEmbed,
+  EmbedBuilder,
   VoiceChannel,
+  SlashCommandBuilder,
 } from 'discord.js';
 import { Logger } from 'winston';
+import * as player from 'play-dl';
+import { SpotifyTrack } from 'play-dl';
 import NoGuildError from '../errors/NoGuildError';
 import UserNotInVoiceChannelError from '../errors/UserNotInVoiceChannelError';
 import { ISubscriptionService } from '../services/music/ISubscriptionService';
-import * as player from 'play-dl';
 import BaseCommand from '../services/interaction/BaseCommand';
 import { Track } from '../typings/Track';
-import { SpotifyTrack } from 'play-dl';
 
 export default class PlayCommand extends BaseCommand {
   public readonly data;
@@ -39,7 +38,7 @@ export default class PlayCommand extends BaseCommand {
   }
 
   public async execute(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
   ): Promise<Message | undefined | void> {
     this.logger.info('Play command called');
     await interaction.deferReply();
@@ -114,7 +113,7 @@ export default class PlayCommand extends BaseCommand {
       );
       [addedSong] = addedSongs;
       isPlaylist = true;
-  } else if (!addedSong) {
+    } else if (!addedSong) {
       addedSong = await this.subscriptionService.enqueueYoutubeSong(
         interaction.guildId!,
         channel,
@@ -126,18 +125,21 @@ export default class PlayCommand extends BaseCommand {
       interaction.guildId!,
     );
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor('#00FF00')
       .setTitle(`Added ${isPlaylist ? 'playlist' : 'song'} to the queue`)
       .setDescription(
         `${addedSong.title} ${isPlaylist ? ' and other songs' : ''}`,
       )
       .setThumbnail(addedSong.thumbnailUrl ?? '')
-      .addField(
-        'Requested by',
-        this.client.users.cache.get(addedSong.requestedBy)?.username ||
-          'unknown',
-      )
+      .addFields([
+        {
+          name: 'Requested by',
+          value:
+            this.client.users.cache.get(addedSong.requestedBy)?.username ||
+            'unknown',
+        },
+      ])
       .setFooter({
         text: queue.length
           ? `${isPlaylist ? 'Total queue length:' : 'Position in queue:'} ${

@@ -19,7 +19,7 @@ class EventController implements IEventController {
     this.client.on('interactionCreate', async (interaction) => {
       try {
         if (!interaction) return;
-        if (interaction.isCommand()) {
+        if (interaction.isCommand() && interaction.isChatInputCommand()) {
           await this.interactionService.handleCreateCommand(interaction);
           return;
         }

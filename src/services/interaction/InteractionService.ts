@@ -1,4 +1,7 @@
-import { CommandInteraction, MessageComponentInteraction } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  MessageComponentInteraction,
+} from 'discord.js';
 import { inject, injectable } from 'inversify';
 import { Logger } from 'winston';
 import BOT_TYPES from '../../botTypes';
@@ -17,7 +20,7 @@ class InteractionService implements IInteractionService {
   ) {}
 
   public async handleCreateCommand(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
   ): Promise<void> {
     this.logger.info(`Command ${interaction.commandName} called`);
     const command = this.commandRepository.getCommand(interaction.commandName);

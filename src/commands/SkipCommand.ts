@@ -1,12 +1,11 @@
-/* eslint-disable import/order */
-import { SlashCommandBuilder } from '@discordjs/builders';
 import {
   Client,
-  CommandInteraction,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
   GuildMember,
   Message,
   MessageComponentInteraction,
-  MessageEmbed,
+  SlashCommandBuilder,
   VoiceChannel,
 } from 'discord.js';
 import { Logger } from 'winston';
@@ -33,7 +32,7 @@ export default class SkipCommand extends BaseCommand {
   }
 
   public async execute(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
   ): Promise<Message | undefined | void> {
     this.logger.info('Skip command called');
     if (!(interaction.member instanceof GuildMember)) {
@@ -60,7 +59,7 @@ export default class SkipCommand extends BaseCommand {
     if (skippedSong) {
       await interaction.reply(`Skipped ${skippedSong.title}`);
     } else {
-      const embed = new MessageEmbed()
+      const embed = new EmbedBuilder()
         .setColor('#880808')
         .setTitle('❌')
         .setDescription('There is nothing to skip!');

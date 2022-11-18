@@ -1,4 +1,4 @@
-import { Snowflake } from 'discord-api-types';
+import { Snowflake } from 'discord.js';
 import type { SpotifyTrack, YouTubeVideo } from 'play-dl';
 import { Track } from '../../typings/Track';
 

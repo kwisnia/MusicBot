@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Client, Intents } from 'discord.js';
+import { ActivityType, Client, GatewayIntentBits } from 'discord.js';
 import { Container } from 'inversify';
 import * as winston from 'winston';
 import BOT_TYPES from './botTypes';
@@ -26,16 +26,16 @@ const logger = winston.createLogger({
 });
 const client = new Client({
   intents: [
-    Intents.FLAGS.GUILDS,
-    Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-    Intents.FLAGS.GUILD_VOICE_STATES,
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildVoiceStates,
   ],
   presence: {
     activities: [
       {
         name: '/play',
-        type: 'LISTENING',
+        type: ActivityType.Listening,
       },
     ],
   },

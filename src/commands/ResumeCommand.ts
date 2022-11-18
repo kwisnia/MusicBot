@@ -1,11 +1,10 @@
-/* eslint-disable import/order */
-import { SlashCommandBuilder } from '@discordjs/builders';
 import {
   Client,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   GuildMember,
   Message,
   MessageComponentInteraction,
+  SlashCommandBuilder,
   VoiceChannel,
 } from 'discord.js';
 import { Logger } from 'winston';
@@ -29,7 +28,7 @@ export default class ResumeCommand extends BaseCommand {
   }
 
   public async execute(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
   ): Promise<Message | undefined | void> {
     this.logger.info('Shuffle command called');
     if (!(interaction.member instanceof GuildMember)) {

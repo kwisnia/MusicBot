@@ -1,9 +1,9 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
 import {
+  ChatInputCommandInteraction,
   Client,
-  CommandInteraction,
   Message,
   MessageComponentInteraction,
+  SlashCommandBuilder,
 } from 'discord.js';
 import { Logger } from 'winston';
 import { ISubscriptionService } from '../music/ISubscriptionService';
@@ -18,7 +18,7 @@ export default abstract class BaseCommand {
   ) {}
 
   public abstract execute(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
   ): Promise<Message | undefined | void>;
 
   public abstract handleComponentInteraction(
