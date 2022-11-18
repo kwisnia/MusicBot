@@ -34,7 +34,7 @@ const client = new Client({
   presence: {
     activities: [
       {
-        name: 'Ekipa',
+        name: '/play',
         type: 'LISTENING',
       },
     ],

@@ -17,23 +17,23 @@ const commandRepository = container.get<ICommandRepository>(
 const logger = container.get<Logger>(BOT_TYPES.Logger);
 
 (async () => {
-  http
-    .createServer((req, res) => {
-      res.write("I'm alive");
-      res.end();
-    })
-    .listen(8080);
+  // http
+  //   .createServer((req, res) => {
+  //     res.write("I'm alive");
+  //     res.end();
+  //   })
+  //   .listen(8080);
   client.on('ready', () => {
     logger.info('The bot is online!');
-    const activities = [`/play`, `/play`, `/play`];
-    let i = 0;
+    // const activities = [`/play`, `/play`, `/play`];
+    // let i = 0;
 
-    setInterval(() => {
-      // eslint-disable-next-line no-plusplus
-      client.user!.setActivity(`${activities[(i++ % activities.length)]}`, {
-        type: 'LISTENING',
-      });
-    }, 5000);
+    // setInterval(() => {
+    //   // eslint-disable-next-line no-plusplus
+    //   client.user!.setActivity(`${activities[(i++ % activities.length)]}`, {
+    //     type: 'LISTENING',
+    //   });
+    // }, 5000);
   });
   client.on('debug', (m) => {
     logger.debug(m);
