@@ -1,6 +1,6 @@
 import { Client } from 'discord.js';
 import { Logger } from 'winston';
-import * as http from 'http';
+// import * as http from 'http';
 import container from './inversify.config';
 import BOT_TYPES from './botTypes';
 import { token } from '../config.json';
