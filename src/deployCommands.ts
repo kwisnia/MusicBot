@@ -1,5 +1,8 @@
 import * as fs from 'fs';
-import { Routes } from 'discord-api-types/v9';
+import {
+  RESTPostAPIChatInputApplicationCommandsJSONBody,
+  Routes,
+} from 'discord-api-types/v9';
 import * as winston from 'winston';
 import { Client, REST } from 'discord.js';
 import * as dotenv from 'dotenv';
@@ -8,7 +11,7 @@ import BOT_TYPES from './botTypes';
 import { ISubscriptionService } from './services/music/ISubscriptionService';
 import { ICommand } from './services/interaction/BaseCommand';
 
-const commands = [];
+const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
 dotenv.config();
 const logger = winston.createLogger({
   transports: [
